@@ -23,6 +23,12 @@ modded class SCR_AIGroupPerception : Managed
 	protected ref SCR_AIStaticArtilleryActivity m_CAI_FireMission;
 	protected float m_fCAI_NextFireMissionTime;
 
+	// Passengers who were told to dismount, and the seats they left. Parallel arrays of weak pointers, see CAI_Remount.
+	protected static const float CAI_REMOUNT_DELAY_S = 30;	//!< Time without contact before passengers get back in
+	protected ref array<AIAgent> m_aCAI_DismountedAgents = {};
+	protected ref array<BaseCompartmentSlot> m_aCAI_DismountedSlots = {};
+	protected float m_fCAI_LastContactTime;
+
 	// Static weapons, see CAI_CrewStaticWeapons
 	protected static const float CAI_STATIC_WEAPON_INTERVAL_S = 15;
 	protected float m_fCAI_NextStaticWeaponTime;
@@ -69,7 +75,9 @@ modded class SCR_AIGroupPerception : Managed
 
 		if (inContact)
 		{
+			m_fCAI_LastContactTime = timeNow;
 			CAI_DismountPassengers(enemyDistance);
+			CAI_BailOut();
 
 			if (timeNow >= m_fCAI_NextStaticWeaponTime)
 			{
@@ -77,6 +85,9 @@ modded class SCR_AIGroupPerception : Managed
 				CAI_CrewStaticWeapons();
 			}
 		}
+
+		if (!inContact && !m_aCAI_DismountedAgents.IsEmpty() && timeNow - m_fCAI_LastContactTime > CAI_REMOUNT_DELAY_S)
+			CAI_Remount();
 
 		if (m_CAI_FireMission)
 			CAI_UpdateFireMission(timeNow);
@@ -511,6 +522,10 @@ modded class SCR_AIGroupPerception : Managed
 				continue;
 
 			utility.AddAction(new SCR_AIGetOutVehicle(utility, null, cargoSlot.GetOwner()));
+
+			// Remembered so he can get back in after the fight
+			m_aCAI_DismountedAgents.Insert(AIAgent.Cast(infoComp.GetOwner()));
+			m_aCAI_DismountedSlots.Insert(cargoSlot);
 		}
 	}
 
@@ -615,5 +630,81 @@ modded class SCR_AIGroupPerception : Managed
 			m_aCAI_StaticWeapons.Insert(usageComp);
 
 		return true;
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Sends passengers who dismounted on contact back to the seats they left, if they and the vehicle are still fit
+	protected void CAI_Remount()
+	{
+		if (m_Group.CAI_GetSettings().m_bRemountAfterContact)
+		{
+			foreach (int i, AIAgent agent : m_aCAI_DismountedAgents)
+			{
+				BaseCompartmentSlot slot = m_aCAI_DismountedSlots[i];
+				SCR_ChimeraAIAgent chimeraAgent = SCR_ChimeraAIAgent.Cast(agent);
+				if (!chimeraAgent || !slot || slot.GetOccupant() || chimeraAgent.GetParentGroup() != m_Group)
+					continue;
+
+				ChimeraCharacter character;
+				SCR_AIUtilityComponent utility = CAI_GetSoldier(chimeraAgent.m_InfoComponent, character);
+				if (!utility)
+					continue;
+
+				IEntity vehicle = slot.GetVehicle();
+				if (!vehicle)
+					continue;
+
+				SCR_DamageManagerComponent damageManager = SCR_DamageManagerComponent.GetDamageManager(vehicle);
+				if (damageManager && damageManager.GetState() == EDamageState.DESTROYED)
+					continue;
+
+				utility.AddAction(new SCR_AIGetInVehicle(utility, null, vehicle, slot, EAICompartmentType.Cargo));
+			}
+		}
+
+		m_aCAI_DismountedAgents.Clear();
+		m_aCAI_DismountedSlots.Clear();
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! In contact, drivers and passengers leave a vehicle which can't move any more. Gunners stay on their weapon.
+	//! A burning vehicle is already evacuated by vanilla.
+	protected void CAI_BailOut()
+	{
+		if (!m_Utility.m_VehicleMgr || m_Utility.m_VehicleMgr.GetVehiclesCount() == 0)
+			return;
+
+		if (!m_Group.CAI_GetSettings().m_bBailOutImmobilised)
+			return;
+
+		array<ref SCR_AIGroupVehicle> vehicles = {};
+		m_Utility.m_VehicleMgr.GetAllVehicles(vehicles);
+		foreach (SCR_AIGroupVehicle vehicle : vehicles)
+		{
+			IEntity vehicleEntity = vehicle.GetEntity();
+			if (!vehicleEntity || vehicle.IsStatic() || vehicle.CanMove())
+				continue;
+
+			foreach (SCR_AIInfoComponent infoComp : m_Utility.m_aInfoComponents)
+			{
+				ChimeraCharacter character;
+				SCR_AIUtilityComponent utility = CAI_GetSoldier(infoComp, character);
+				if (!utility)
+					continue;
+
+				CompartmentAccessComponent compartmentAccess = character.GetCompartmentAccessComponent();
+				if (!compartmentAccess)
+					continue;
+
+				BaseCompartmentSlot slot = compartmentAccess.GetCompartment();
+				if (!slot || slot.GetVehicle() != vehicleEntity || TurretCompartmentSlot.Cast(slot))
+					continue;
+
+				if (utility.HasActionOfType(SCR_AIGetOutVehicle))
+					continue;
+
+				utility.AddAction(new SCR_AIGetOutVehicle(utility, null, slot.GetOwner()));
+			}
+		}
 	}
 }

@@ -36,7 +36,16 @@ enum ECAI_Setting
 	SMOKE_BEFORE_CHARGE,
 	DISMOUNT,
 	DISMOUNT_DISTANCE,
-	VEHICLE_RETREAT_DAMAGE
+	VEHICLE_RETREAT_DAMAGE,
+	VEHICLE_STANDOFF,
+	VEHICLE_ENGAGE,
+	VEHICLE_RUSH,
+	REMOUNT,
+	BAIL_OUT,
+	COVER_ANGLE,
+	COVER_MIN_HEIGHT,
+	COVER_SEARCH,
+	COVER_HOLD
 }
 
 //! Ready-made sets of values for the skill related settings, see CAI_Settings.ApplyPreset
@@ -165,6 +174,32 @@ class CAI_Settings
 	[Attribute("50", UIWidgets.Slider, "A group in contact breaks off and falls back, as with casualties, once one of its vehicles has taken this many percent damage. 0 = never.", "0 100 5")]
 	int m_iVehicleRetreatDamage;
 
+	[Attribute("100", UIWidgets.Slider, "Armed vehicles back away from a target which is closer than this (metres). 60 = vanilla.", "20 500 10")]
+	float m_fVehicleStandoffDistance;
+
+	[Attribute("300", UIWidgets.Slider, "Armed vehicles stop to fight enemies within this distance (metres) and close in on targets beyond it. Between the stand-off and this distance they hold and fire. 200 = vanilla.", "50 1000 25")]
+	float m_fVehicleEngageDistance;
+
+	[Attribute("0", UIWidgets.CheckBox, "Armed vehicles drive straight at their target instead of keeping their distance. Vehicles also do this on a banzai charge and on a Search and Destroy assault.")]
+	bool m_bVehicleRush;
+
+	[Attribute("1", UIWidgets.CheckBox, "Passengers who dismounted on contact get back into their vehicle once the group has been out of contact for half a minute.")]
+	bool m_bRemountAfterContact;
+
+	[Attribute("1", UIWidgets.CheckBox, "In contact, drivers and passengers leave a vehicle which can no longer move. Gunners stay on their weapon.")]
+	bool m_bBailOutImmobilised;
+
+	[Attribute("45", UIWidgets.Slider, "Soldiers only take cover which faces the enemy within this angle (degrees). Lower is stricter. 60 = vanilla.", "20 90 5")]
+	float m_fCoverMaxAngle;
+
+	[Attribute("0.5", UIWidgets.Slider, "Lowest cover (metres) soldiers will use in a fight. 0 = vanilla, any height. Too high a value leaves soldiers without cover.", "0 1.5 0.1")]
+	float m_fCoverMinHeight;
+
+	[Attribute("1.5", UIWidgets.Slider, "Multiplier of how far soldiers look for cover in a fight. 1 = vanilla, 10 to 30 m.", "0.5 3 0.1")]
+	float m_fCoverSearchScale;
+
+	[Attribute("2", UIWidgets.Slider, "Multiplier of how long a soldier stays in cover before he moves closer to his target. 1 = vanilla, about 5 s. Assaults and banzai charges ignore this.", "0.25 5 0.25")]
+	float m_fCoverHoldScale;
 	protected bool m_bPresetInitialised;
 
 	// Values of the unmodified game, used when the mod is disabled
@@ -177,6 +212,9 @@ class CAI_Settings
 	static const float VANILLA_TARGET_EVAL_INTERVAL = 0.5;
 	static const float VANILLA_DECISION_DELAY = 5;
 	static const float VANILLA_AUTO_FIRE_RANGE = 50;
+	static const float VANILLA_VEHICLE_STANDOFF = 60;
+	static const float VANILLA_VEHICLE_ENGAGE = 200;
+	static const float VANILLA_COVER_ANGLE = 60;
 
 	//------------------------------------------------------------------------------------------------
 	//! The mod's own tuning. Must match the attribute defaults above.
@@ -211,6 +249,15 @@ class CAI_Settings
 		m_bDismountOnContact = true;
 		m_fDismountDistance = 300;
 		m_iVehicleRetreatDamage = 50;
+		m_fVehicleStandoffDistance = 100;
+		m_fVehicleEngageDistance = 300;
+		m_bVehicleRush = false;
+		m_bRemountAfterContact = true;
+		m_bBailOutImmobilised = true;
+		m_fCoverMaxAngle = 45;
+		m_fCoverMinHeight = 0.5;
+		m_fCoverSearchScale = 1.5;
+		m_fCoverHoldScale = 2;
 		m_bPresetInitialised = true;
 		m_fArtilleryRange = 2000;
 		m_iArtilleryRounds = 4;
@@ -254,6 +301,15 @@ class CAI_Settings
 		m_bDismountOnContact = false;
 		m_fDismountDistance = 300;
 		m_iVehicleRetreatDamage = 0;
+		m_fVehicleStandoffDistance = VANILLA_VEHICLE_STANDOFF;
+		m_fVehicleEngageDistance = VANILLA_VEHICLE_ENGAGE;
+		m_bVehicleRush = false;
+		m_bRemountAfterContact = false;
+		m_bBailOutImmobilised = false;
+		m_fCoverMaxAngle = VANILLA_COVER_ANGLE;
+		m_fCoverMinHeight = 0;
+		m_fCoverSearchScale = 1;
+		m_fCoverHoldScale = 1;
 		m_bPresetInitialised = true;
 		m_fArtilleryRange = 2000;
 		m_iArtilleryRounds = 4;
@@ -319,6 +375,15 @@ class CAI_Settings
 		m_bDismountOnContact = other.m_bDismountOnContact;
 		m_fDismountDistance = other.m_fDismountDistance;
 		m_iVehicleRetreatDamage = other.m_iVehicleRetreatDamage;
+		m_fVehicleStandoffDistance = other.m_fVehicleStandoffDistance;
+		m_fVehicleEngageDistance = other.m_fVehicleEngageDistance;
+		m_bVehicleRush = other.m_bVehicleRush;
+		m_bRemountAfterContact = other.m_bRemountAfterContact;
+		m_bBailOutImmobilised = other.m_bBailOutImmobilised;
+		m_fCoverMaxAngle = other.m_fCoverMaxAngle;
+		m_fCoverMinHeight = other.m_fCoverMinHeight;
+		m_fCoverSearchScale = other.m_fCoverSearchScale;
+		m_fCoverHoldScale = other.m_fCoverHoldScale;
 		m_bPresetInitialised = true;
 	}
 
@@ -364,6 +429,15 @@ class CAI_Settings
 			case ECAI_Setting.DISMOUNT:					return BoolToFloat(m_bDismountOnContact);
 			case ECAI_Setting.DISMOUNT_DISTANCE:		return m_fDismountDistance;
 			case ECAI_Setting.VEHICLE_RETREAT_DAMAGE:	return m_iVehicleRetreatDamage;
+			case ECAI_Setting.VEHICLE_STANDOFF:			return m_fVehicleStandoffDistance;
+			case ECAI_Setting.VEHICLE_ENGAGE:			return m_fVehicleEngageDistance;
+			case ECAI_Setting.VEHICLE_RUSH:				return BoolToFloat(m_bVehicleRush);
+			case ECAI_Setting.REMOUNT:					return BoolToFloat(m_bRemountAfterContact);
+			case ECAI_Setting.BAIL_OUT:					return BoolToFloat(m_bBailOutImmobilised);
+			case ECAI_Setting.COVER_ANGLE:				return m_fCoverMaxAngle;
+			case ECAI_Setting.COVER_MIN_HEIGHT:			return m_fCoverMinHeight;
+			case ECAI_Setting.COVER_SEARCH:				return m_fCoverSearchScale;
+			case ECAI_Setting.COVER_HOLD:				return m_fCoverHoldScale;
 		}
 
 		return 0;
@@ -416,6 +490,15 @@ class CAI_Settings
 			case ECAI_Setting.DISMOUNT:					m_bDismountOnContact = value != 0; break;
 			case ECAI_Setting.DISMOUNT_DISTANCE:		m_fDismountDistance = Math.Clamp(value, 50, 1000); break;
 			case ECAI_Setting.VEHICLE_RETREAT_DAMAGE:	m_iVehicleRetreatDamage = Math.Round(Math.Clamp(value, 0, 100)); break;
+			case ECAI_Setting.VEHICLE_STANDOFF:			m_fVehicleStandoffDistance = Math.Clamp(value, 20, 500); break;
+			case ECAI_Setting.VEHICLE_ENGAGE:			m_fVehicleEngageDistance = Math.Clamp(value, 50, 1000); break;
+			case ECAI_Setting.VEHICLE_RUSH:				m_bVehicleRush = value != 0; break;
+			case ECAI_Setting.REMOUNT:					m_bRemountAfterContact = value != 0; break;
+			case ECAI_Setting.BAIL_OUT:					m_bBailOutImmobilised = value != 0; break;
+			case ECAI_Setting.COVER_ANGLE:				m_fCoverMaxAngle = Math.Clamp(value, 20, 90); break;
+			case ECAI_Setting.COVER_MIN_HEIGHT:			m_fCoverMinHeight = Math.Clamp(value, 0, 1.5); break;
+			case ECAI_Setting.COVER_SEARCH:				m_fCoverSearchScale = Math.Clamp(value, 0.5, 3); break;
+			case ECAI_Setting.COVER_HOLD:				m_fCoverHoldScale = Math.Clamp(value, 0.25, 5); break;
 		}
 	}
 
@@ -438,6 +521,8 @@ class CAI_Settings
 			case ECAI_Setting.RIFLE_BURST:
 			case ECAI_Setting.MG_BURST:
 			case ECAI_Setting.BREAK_CASUALTIES:
+			case ECAI_Setting.COVER_ANGLE:
+			case ECAI_Setting.COVER_HOLD:
 				return true;
 		}
 
@@ -454,10 +539,10 @@ class CAI_Settings
 		//                                     aim   night tempo spot  spotSup suppr eval  delay launch auto  rifle mg  break
 		switch (preset)
 		{
-			case ECAI_Preset.MILITIA:	SetPresetValues(1.6,  2.5,  1.5,  0.9,  0.4,    1.3,  0.5,  5,    40,    200,  8,    20, 40); break;
-			case ECAI_Preset.REGULAR:	SetPresetValues(1.15, 2,    1.5,  1.1,  0.5,    1,    0.4,  3.5,  50,    150,  6,    15, 55); break;
-			case ECAI_Preset.ELITE:		SetPresetValues(0.6,  1.5,  1.35, 1.5,  0.7,    0.6,  0.3,  2,    50,    150,  6,    15, 70); break;
-			case ECAI_Preset.CAG:		SetPresetValues(0.3,  1.1,  1.6,  2.2,  1,      0.25, 0.2,  0.5,  30,    75,   3,    8,  0); break;
+			case ECAI_Preset.MILITIA:	SetPresetValues(1.6,  2.5,  1.5,  0.9,  0.4,    1.3,  0.5,  5,    40,    200,  8,    20, 40, 0.6, 75); break;
+			case ECAI_Preset.REGULAR:	SetPresetValues(1.15, 2,    1.5,  1.1,  0.5,    1,    0.4,  3.5,  50,    150,  6,    15, 55, 1, 60); break;
+			case ECAI_Preset.ELITE:		SetPresetValues(0.6,  1.5,  1.35, 1.5,  0.7,    0.6,  0.3,  2,    50,    150,  6,    15, 70, 2, 45); break;
+			case ECAI_Preset.CAG:		SetPresetValues(0.3,  1.1,  1.6,  2.2,  1,      0.25, 0.2,  0.5,  30,    75,   3,    8,  0, 2.5, 40); break;
 		}
 	}
 
@@ -473,7 +558,8 @@ class CAI_Settings
 
 	//------------------------------------------------------------------------------------------------
 	protected void SetPresetValues(float aimError, float nightPenalty, float fireTempo, float perception, float suppressedPerception, float suppression,
-		float evalInterval, float decisionDelay, int launcherChance, float autoFireRange, int rifleBurst, int machineGunBurst, int breakCasualties)
+		float evalInterval, float decisionDelay, int launcherChance, float autoFireRange, int rifleBurst, int machineGunBurst, int breakCasualties,
+		float coverHold, float coverAngle)
 	{
 		m_fAimErrorScale = aimError;
 		m_fNightAimPenalty = nightPenalty;
@@ -488,6 +574,8 @@ class CAI_Settings
 		m_iRifleBurstRounds = rifleBurst;
 		m_iMachineGunBurstRounds = machineGunBurst;
 		m_iBreakCasualties = breakCasualties;
+		m_fCoverHoldScale = coverHold;
+		m_fCoverMaxAngle = coverAngle;
 	}
 
 	//------------------------------------------------------------------------------------------------

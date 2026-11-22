@@ -18,7 +18,7 @@ OverlayWidgetClass {
      }
     }
     SCR_ExternalPaginationUIComponent "{5612F176641634D1}" {
-     m_iColumns 13
+     m_iColumns 14
      m_sContentName "Items"
      m_sButtonPrevName "ButtonPrev"
      m_sButtonNextName "ButtonNext"
@@ -131,6 +131,12 @@ OverlayWidgetClass {
        Name "CommandMenu_Item12"
        Slot UniformGridWidgetSlot "{59DE856C658C1682}" {
         Column 12
+       }
+      }
+      ButtonWidgetClass "{6B5C1E0A7D3F9B25}" : "{17AFF596058A149F}UI/layouts/Editor/Toolbar/CommandMenu/CommandMenu_Item.layout" {
+       Name "CommandMenu_Item13"
+       Slot UniformGridWidgetSlot "{59DE856C658C1682}" {
+        Column 13
        }
       }
      }

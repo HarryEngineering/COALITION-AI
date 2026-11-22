@@ -78,8 +78,15 @@ modded class SCR_AICombatMoveLogic_Attack : SCR_AICombatMoveLogicBase
 	{
 		float waitTime = super.ResolveStoppedWaitTime(inCover, threat, weaponType);
 
-		if (m_CombatComp && m_CombatComp.CAI_IsAssaulting())
+		if (!m_CombatComp)
+			return waitTime;
+
+		if (m_CombatComp.CAI_IsAssaulting())
 			return Math.Min(waitTime, CAI_ASSAULT_STOPPED_WAIT_S);
+
+		// A soldier who found cover makes use of it
+		if (inCover)
+			waitTime *= m_CombatComp.CAI_GetSettings().m_fCoverHoldScale;
 
 		return waitTime;
 	}

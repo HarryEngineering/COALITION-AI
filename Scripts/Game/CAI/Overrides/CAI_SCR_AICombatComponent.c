@@ -13,7 +13,7 @@ modded class SCR_AICombatComponent : ScriptComponent
 	protected static ref array<EWeaponType> s_aCAI_LauncherWhitelist = {EWeaponType.WT_ROCKETLAUNCHER};
 	protected ref BaseTarget m_CAI_LauncherTarget;	//!< Infantry target the launcher decision below was made for
 	protected bool m_bCAI_UseLauncher;
-	protected float m_fCAI_LauncherEndTime_ms;		//!< World time		//!< True while our skill override is applied
+	protected float m_fCAI_LauncherEndTime_ms;		//!< World time
 
 	//------------------------------------------------------------------------------------------------
 	//! Settings this soldier currently uses. Never returns null.

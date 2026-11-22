@@ -97,6 +97,15 @@ class CAI_EditorAttributeHelper
 		manager.SetAttributeEnabled(CAI_DismountEditorAttribute, modOn);
 		manager.SetAttributeEnabled(CAI_DismountDistanceEditorAttribute, modOn);
 		manager.SetAttributeEnabled(CAI_VehicleRetreatDamageEditorAttribute, modOn);
+		manager.SetAttributeEnabled(CAI_VehicleStandoffEditorAttribute, modOn);
+		manager.SetAttributeEnabled(CAI_VehicleEngageEditorAttribute, modOn);
+		manager.SetAttributeEnabled(CAI_VehicleRushEditorAttribute, modOn);
+		manager.SetAttributeEnabled(CAI_RemountEditorAttribute, modOn);
+		manager.SetAttributeEnabled(CAI_BailOutEditorAttribute, modOn);
+		manager.SetAttributeEnabled(CAI_CoverAngleEditorAttribute, modOn);
+		manager.SetAttributeEnabled(CAI_CoverMinHeightEditorAttribute, modOn);
+		manager.SetAttributeEnabled(CAI_CoverSearchEditorAttribute, modOn);
+		manager.SetAttributeEnabled(CAI_CoverHoldEditorAttribute, modOn);
 		manager.SetAttributeEnabled(CAI_HuntRadiusEditorAttribute, huntOn);
 	}
 
@@ -552,4 +561,58 @@ class CAI_DismountDistanceEditorAttribute : CAI_BaseSliderEditorAttribute
 class CAI_VehicleRetreatDamageEditorAttribute : CAI_BaseSliderEditorAttribute
 {
 	override protected ECAI_Setting GetSetting() { return ECAI_Setting.VEHICLE_RETREAT_DAMAGE; }
+}
+
+[BaseContainerProps(), SCR_BaseEditorAttributeCustomTitle()]
+class CAI_VehicleStandoffEditorAttribute : CAI_BaseSliderEditorAttribute
+{
+	override protected ECAI_Setting GetSetting() { return ECAI_Setting.VEHICLE_STANDOFF; }
+}
+
+[BaseContainerProps(), SCR_BaseEditorAttributeCustomTitle()]
+class CAI_VehicleEngageEditorAttribute : CAI_BaseSliderEditorAttribute
+{
+	override protected ECAI_Setting GetSetting() { return ECAI_Setting.VEHICLE_ENGAGE; }
+}
+
+[BaseContainerProps(), SCR_BaseEditorAttributeCustomTitle()]
+class CAI_VehicleRushEditorAttribute : CAI_BaseCheckboxEditorAttribute
+{
+	override protected ECAI_Setting GetSetting() { return ECAI_Setting.VEHICLE_RUSH; }
+}
+
+[BaseContainerProps(), SCR_BaseEditorAttributeCustomTitle()]
+class CAI_RemountEditorAttribute : CAI_BaseCheckboxEditorAttribute
+{
+	override protected ECAI_Setting GetSetting() { return ECAI_Setting.REMOUNT; }
+}
+
+[BaseContainerProps(), SCR_BaseEditorAttributeCustomTitle()]
+class CAI_BailOutEditorAttribute : CAI_BaseCheckboxEditorAttribute
+{
+	override protected ECAI_Setting GetSetting() { return ECAI_Setting.BAIL_OUT; }
+}
+
+[BaseContainerProps(), SCR_BaseEditorAttributeCustomTitle()]
+class CAI_CoverAngleEditorAttribute : CAI_BaseSliderEditorAttribute
+{
+	override protected ECAI_Setting GetSetting() { return ECAI_Setting.COVER_ANGLE; }
+}
+
+[BaseContainerProps(), SCR_BaseEditorAttributeCustomTitle()]
+class CAI_CoverMinHeightEditorAttribute : CAI_BaseSliderEditorAttribute
+{
+	override protected ECAI_Setting GetSetting() { return ECAI_Setting.COVER_MIN_HEIGHT; }
+}
+
+[BaseContainerProps(), SCR_BaseEditorAttributeCustomTitle()]
+class CAI_CoverSearchEditorAttribute : CAI_BaseSliderEditorAttribute
+{
+	override protected ECAI_Setting GetSetting() { return ECAI_Setting.COVER_SEARCH; }
+}
+
+[BaseContainerProps(), SCR_BaseEditorAttributeCustomTitle()]
+class CAI_CoverHoldEditorAttribute : CAI_BaseSliderEditorAttribute
+{
+	override protected ECAI_Setting GetSetting() { return ECAI_Setting.COVER_HOLD; }
 }

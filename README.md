@@ -31,18 +31,28 @@ Every setting can be set by mission makers in Workbench and changed live by a Ga
 - **Breaking off**: a group in contact that has lost most of its soldiers throws smoke, drops its orders and falls back away from the enemy. Vanilla groups fight to the last man.
 - **Smoke**: groups throw smoke ahead of a banzai charge, ahead of a close Search and Destroy assault, and when they break off.
 
+### Cover
+- **Better cover**: soldiers only take cover that faces the enemy within 45 degrees and is at least half a meter high.
+- **Staying in cover**: a soldier who found cover stays about twice as long before moving closer. Assaults and banzai charges ignore this.
+
 ### Vehicles
+- **Keeping their distance**: armed vehicles back away from targets closer than 100 m, close in on targets beyond 300 m, and hold and fire in between. Both distances are settings.
+- **Stopping to fight**: vehicles stop for enemies within their engage distance instead of driving past them.
+- **Rushing**: with **Vehicles rush targets** ticked, on a banzai charge, or on a Search and Destroy assault, armed vehicles drive straight at their target instead.
 - **Dismount on contact**: passengers get out when the group has identified enemies nearby. Drivers and gunners stay.
+- **Remount**: those passengers get back in once the group has been out of contact for half a minute.
+- **Bail out**: in contact, drivers and passengers leave a vehicle that can no longer move. Gunners stay on their weapon.
 - **Retreat when damaged**: a group whose vehicle is badly damaged in contact breaks off and falls back.
 
 ### New Game Master orders
-All three are placed like any other waypoint: select a group, pick the order from the command bar, click the destination.
+All four are placed like any other waypoint: select a group, pick the order from the command bar, click the destination.
 
 - **Banzai charge**: the group breaks formation and sprints straight at the position, ignoring cover and suppression. Sprinting soldiers cannot aim, so they do not fire until they arrive.
 - **Clear building**: place it on a building. The group works out the walkable spots inside, floor by floor, splits them among its soldiers and sweeps them, then carries on with its next waypoint.
 - **Garrison building**: place it on a building. The soldiers spread out inside and hold it. They fight from where they are and return to their spots afterwards. The order stays until the group is given another one.
+- **Man trenches**: place it on a trench line. The group finds the trench spots inside the waypoint's radius, spreads out along them and holds, like a garrison. Dug and built trenches both count.
 
-The command bar is widened from 9 to 13 slots so the vanilla orders and the three new ones fit on one page.
+The command bar is widened from 9 to 14 slots so the vanilla orders and the four new ones fit on one page.
 
 ### Movement
 - **Roads**: for soldiers on foot, roads now cost several times more than open ground, where vanilla makes them the cheapest surface. They head for a waypoint across country and only use or cross a road when there is no reasonable way around. Vehicles are not affected.
@@ -78,6 +88,14 @@ The command bar is widened from 9 to 13 slots so the vanilla orders and the thre
 | Break off at casualties / fall back distance | 60 percent / 250 m | Never |
 | Dismount on contact / distance | On / 300 m | Off |
 | Vehicle retreat damage | 50 percent | Never |
+| Vehicle stand-off / engage distance | 100 m / 300 m | 60 m / 200 m |
+| Vehicles rush targets | Off | Off |
+| Remount after contact | On | Off |
+| Bail out when immobilised | On | Off |
+| Cover facing angle | 45 degrees | 60 degrees |
+| Lowest usable cover | 0.5 m | Any |
+| Cover search range | x1.5 | x1 |
+| Time in cover | x2 | x1 |
 
 ### Skill presets
 | Value | Militia | Regular | Elite | CAG |
@@ -95,6 +113,8 @@ The command bar is widened from 9 to 13 slots so the vanilla orders and the thre
 | Rifle burst length | 8 | 6 | 6 | 3 |
 | Machine gun burst length | 20 | 15 | 15 | 8 |
 | Break off at casualties | 40 percent | 55 percent | 70 percent | Never |
+| Time in cover | x0.6 | x1 | x2 | x2.5 |
+| Cover facing angle | 75 degrees | 60 degrees | 45 degrees | 40 degrees |
 
 A preset only writes the values in this table. Changing one of them afterwards switches the preset back to Custom.
 
@@ -121,10 +141,10 @@ The road change is the exception. It is a project setting in `addon.gproj` and c
 | --- | --- |
 | `Scripts/Game/CAI/Settings` | `CAI_Settings`, the settings manager and `CAI_SettingsComponent` |
 | `Scripts/Game/CAI/Overrides` | Modded vanilla AI classes: combat component, aiming, fire timing, threat, combat movement, group perception and target clusters |
-| `Scripts/Game/CAI/Waypoints` | The Clear building and Garrison building waypoints |
+| `Scripts/Game/CAI/Waypoints` | The Clear building, Garrison building and Man trenches waypoints |
 | `Scripts/Game/CAI/Editor` | Game Master attributes for every setting |
 | `Configs/Editor` | Attribute list, attribute category, command bar entries and placeable waypoint registry |
-| `PrefabsEditable/Auto/AI/Waypoints` | Banzai charge, Clear building and Garrison building waypoint prefabs |
+| `PrefabsEditable/Auto/AI/Waypoints` | Banzai charge, Clear building, Garrison building and Man trenches waypoint prefabs |
 | `UI` | Attribute tab icon and the widened command bar layout |
 
 ## Compatibility

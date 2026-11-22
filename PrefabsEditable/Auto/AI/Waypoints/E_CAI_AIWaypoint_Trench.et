@@ -1,0 +1,23 @@
+CAI_TrenchWaypoint : "{49CED34BBCD060F0}Prefabs/AI/Waypoints/AIWaypoint_Base.et" {
+ ID "663CBEF736DEBDE0"
+ components {
+  SCR_EditableEntityVisibilityChildComponent "{6B76CCCF3A8D7F2B}" : "{CA7D13FC9D385E8F}Prefabs/Editor/Components/Waypoint_SCR_EditableEntityVisibilityChildComponent.ct" {
+  }
+  SCR_EditableWaypointComponent "{6B8DFC111A3B9B88}" : "{89CF6086B34A8800}Prefabs/Editor/Components/Waypoint_SCR_EditableEntityComponent.ct" {
+   m_UIInfo SCR_EditableEntityUIInfo "{5298E609432D192D}" {
+    Name "Man trenches"
+    Description "The group mans the trenches inside this waypoint's radius and holds them."
+    Icon "{1B3B38AAA1577734}UI/Textures/Editor/EditableEntities/Waypoints/EditableEntity_Waypoint_Defend.edds"
+    m_aAutoLabels {
+     7 124
+    }
+   }
+  }
+  SCR_WaypointAreaMeshComponent "{6B996CB4C1DB7408}" : "{3CE012874EA1DC23}Prefabs/Editor/Components/Waypoint_SCR_WaypointAreaMeshComponent.ct" {
+  }
+  RplComponent "{6B8F7118CF683ADC}" : "{B193E926C1935A4C}Prefabs/Editor/Components/Default_RplComponent.ct" {
+  }
+ }
+ Description "Man and hold the trenches around this position"
+ CompletionRadius 30
+}

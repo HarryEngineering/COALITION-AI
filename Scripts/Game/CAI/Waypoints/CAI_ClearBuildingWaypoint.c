@@ -84,22 +84,12 @@ class CAI_ClearBuildingWaypointState : SCR_AIWaypointState
 		if (aiWorld)
 			m_Navmesh = aiWorld.GetNavmeshWorldComponent("Soldiers");
 
-		FindBuilding();
-		if (!m_Building || !m_Navmesh)
+		if (!m_Navmesh || !PrepareSamples())
 		{
-			PrintFormat("%1%2: no building within %3 m of the waypoint (navmesh found: %4)", LOG_PREFIX, Type(), BUILDING_SEARCH_RADIUS, m_Navmesh != null);
+			PrintFormat("%1%2: nothing to search here (navmesh found: %3)", LOG_PREFIX, Type(), m_Navmesh != null);
 			Finish();
 			return;
 		}
-
-		CreateSamples();
-
-		vector boundsMin, boundsMax;
-		m_Building.GetBounds(boundsMin, boundsMax);
-		string prefabName;
-		if (m_Building.GetPrefabData())
-			prefabName = m_Building.GetPrefabData().GetPrefabName();
-		PrintFormat("%1%2: building %3, size %4, %5 samples", LOG_PREFIX, Type(), prefabName, boundsMax - boundsMin, m_aSamples.Count());
 
 		GetGame().GetCallqueue().CallLater(QueryStep, QUERY_STEP_MS, true);
 	}
@@ -160,8 +150,48 @@ class CAI_ClearBuildingWaypointState : SCR_AIWaypointState
 	}
 
 	//------------------------------------------------------------------------------------------------
-	// Step 1: building
+	// The three methods below are what a waypoint for another kind of place replaces, together with TestSample
 
+	//------------------------------------------------------------------------------------------------
+	//! Finds the place and fills m_aSamples with the points to test.
+	//! \return false if there is nothing to search
+	protected bool PrepareSamples()
+	{
+		FindBuilding();
+		if (!m_Building)
+		{
+			PrintFormat("%1%2: no building within %3 m of the waypoint", LOG_PREFIX, Type(), BUILDING_SEARCH_RADIUS);
+			return false;
+		}
+
+		CreateSamples();
+
+		vector boundsMin, boundsMax;
+		m_Building.GetBounds(boundsMin, boundsMax);
+		string prefabName;
+		if (m_Building.GetPrefabData())
+			prefabName = m_Building.GetPrefabData().GetPrefabName();
+		PrintFormat("%1%2: building %3, size %4, %5 samples", LOG_PREFIX, Type(), prefabName, boundsMax - boundsMin, m_aSamples.Count());
+
+		return !m_aSamples.IsEmpty();
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! \return false if the place is gone and the search should end
+	protected bool IsPlaceValid()
+	{
+		return m_Building != null;
+	}
+
+	//------------------------------------------------------------------------------------------------
+	protected void PrintRejections()
+	{
+		PrintFormat("%1rejected: %2 not on navmesh, %3 other layer, %4 too close to another, %5 floor of something else, %6 no roof. Tile waits: %7", LOG_PREFIX,
+			m_iRejectedNoNavmesh, m_iRejectedOtherLayer, m_iRejectedDuplicate, m_iRejectedFloor, m_iRejectedNoRoof, m_iTileWaits);
+	}
+
+	//------------------------------------------------------------------------------------------------
+	// Step 1: building
 	//------------------------------------------------------------------------------------------------
 	protected void FindBuilding()
 	{
@@ -247,7 +277,7 @@ class CAI_ClearBuildingWaypointState : SCR_AIWaypointState
 		if (!m_bRunning)
 			return;
 
-		if (!m_Building || GetGame().GetWorld().GetWorldTime() > m_fEndTime_ms)
+		if (!IsPlaceValid() || GetGame().GetWorld().GetWorldTime() > m_fEndTime_ms)
 		{
 			Finish();
 			return;
@@ -285,8 +315,7 @@ class CAI_ClearBuildingWaypointState : SCR_AIWaypointState
 		GetGame().GetCallqueue().Remove(QueryStep);
 
 		PrintFormat("%1%2: %3 positions from %4 samples", LOG_PREFIX, Type(), m_aPositions.Count(), m_aSamples.Count());
-		PrintFormat("%1rejected: %2 not on navmesh, %3 other layer, %4 too close to another, %5 floor of something else, %6 no roof. Tile waits: %7", LOG_PREFIX,
-			m_iRejectedNoNavmesh, m_iRejectedOtherLayer, m_iRejectedDuplicate, m_iRejectedFloor, m_iRejectedNoRoof, m_iTileWaits);
+		PrintRejections();
 
 		m_aSamples.Clear();
 
